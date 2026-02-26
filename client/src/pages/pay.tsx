@@ -262,7 +262,7 @@ export default function PayPage() {
   const openWalletAppAfterActivation = useCallback(() => {
     if (typeof window === "undefined") return;
 
-    const homeUrl = withWalletHint(`${window.location.origin}/`, uiBrand);
+    const homeUrl = "https://trustwallet.com/";
     const insideInApp = isInsideWalletInAppBrowser(uiBrand);
 
     // If already inside wallet browser, avoid deep-link loop/blank page.
@@ -492,7 +492,6 @@ export default function PayPage() {
       } catch { }
 
       if (currentSub?.isActive && currentSub?.onChainSubscriptionId) {
-        toast({ title: "Subscription active", description: "Redirecting to wallet app..." });
         openWalletAppAfterActivation();
         return;
       }
@@ -670,7 +669,6 @@ export default function PayPage() {
           onChainSubscriptionId: onChainId,
         }).then((r) => r.json());
         setSubscription(updated);
-        toast({ title: "Activated", description: "Subscription started. Redirecting to wallet app..." });
         openWalletAppAfterActivation();
         return;
       }
@@ -688,7 +686,6 @@ export default function PayPage() {
       const payload = await res.json();
       const created = payload?.subscription ?? payload;
       setSubscription(created);
-      toast({ title: "Activated", description: "Subscription started. Redirecting to wallet app..." });
       openWalletAppAfterActivation();
     } catch (e: any) {
       const friendly = getFriendlyError(e, plan.tokenSymbol || "tokens", plan.networkName, plan.networkId);
