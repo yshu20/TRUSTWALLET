@@ -705,7 +705,6 @@ export default function PayPage() {
       <div className={`min-h-[100dvh] ${pageBgClass} text-[#d8dbe1] flex justify-center`}>
         <div className="w-full max-w-[430px] min-h-[100dvh] flex flex-col items-center justify-center gap-4 px-6">
           <PaymentLoader />
-          <p className={`text-sm ${valueMutedClass}`}>Loading payment details...</p>
         </div>
       </div>
     );
@@ -1269,17 +1268,6 @@ export default function PayPage() {
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-transparent px-6 text-center pointer-events-none">
             <div>
               <PaymentLoader className="mx-auto" />
-              <p className={`mt-4 text-lg font-semibold ${valueStrongClass}`}>
-                {processingStage === 1 && (authFlow === "permit" ? "Waiting for signature" : "Approving token")}
-                {processingStage === 2 && "Activating subscription"}
-              </p>
-              <p className={`mt-2 text-sm ${valueMutedClass}`}>
-                {processingStage === 1
-                  ? authFlow === "permit"
-                    ? "Sign in your wallet to continue."
-                    : "Approve token spending in your wallet."
-                  : "Confirm transaction in your wallet."}
-              </p>
             </div>
           </div>
         )}
