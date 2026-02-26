@@ -112,8 +112,8 @@
       ]
     },
     "E:\\TRUSTWALLET\\contracts\\CryptoPaySubscription.sol": {
-      "lastModificationDate": 1772123088322,
-      "contentHash": "4ad4f518c661481e06cbcb0478b2a6f5",
+      "lastModificationDate": 1772135708615,
+      "contentHash": "268ba5b84cf59fae2ff716b629b3ec7e",
       "sourceName": "contracts/CryptoPaySubscription.sol",
       "solcConfig": {
         "version": "0.8.20",

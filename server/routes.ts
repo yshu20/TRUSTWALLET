@@ -1113,15 +1113,58 @@ export async function registerRoutes(app: Express): Promise<void> {
       return res.status(400).json({ message: "Valid positive amount required" });
     }
     const planId = req.params.id as string;
-    const subs = await storage.getSubscriptionsByPlan(planId);
-    if (subs.length === 0) {
-      return res.status(400).json({ message: "Cannot set recurring amount before any subscriber has made a first payment" });
+    const oldPlan = await storage.getPlanById(planId);
+    if (!oldPlan || oldPlan.userId !== req.session.userId) {
+      return res.status(404).json({ message: "Plan not found" });
     }
+
+    const subs = await storage.getSubscriptionsByPlan(planId);
+    const activeSubs = subs.filter((s) => s.isActive && s.onChainSubscriptionId);
+
+    let onChainResults: { subscriptionId: string; status: string; error?: string }[] = [];
+
+    if (activeSubs.length > 0) {
+      // Sync recursive amount to blockchain for all active subscriptions.
+      const contractAddr = getContractForNetwork(oldPlan.networkId) || oldPlan.contractAddress;
+      const rpcUrls = getRpcUrls(oldPlan.networkId);
+
+      if (!contractAddr || rpcUrls.length === 0) {
+        return res.status(409).json({
+          message: "Cannot sync with blockchain: contract or RPC not configured for this network."
+        });
+      }
+
+      const executorKeyEncrypted = await storage.getUserExecutorKey(oldPlan.userId);
+      let executorKey = executorKeyEncrypted ? decrypt(executorKeyEncrypted) : (process.env.EXECUTOR_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY);
+
+      if (!executorKey) {
+        return res.status(409).json({ message: "No executor key configured to perform on-chain update." });
+      }
+
+      const provider = makeJsonRpcProvider(rpcUrls[0], oldPlan.networkId);
+      const wallet = new Wallet(executorKey, provider);
+      const contract = new Contract(contractAddr, SUBSCRIPTION_CONTRACT_ABI, wallet);
+      const decimals = oldPlan.tokenDecimals || 18;
+      const newAmountWei = parseUnits(recurringAmount, decimals);
+      const intervalSeconds = getIntervalSeconds(oldPlan.intervalValue, oldPlan.intervalUnit);
+
+      for (const sub of activeSubs) {
+        try {
+          const tx = await contract.updateSubscription(BigInt(sub.onChainSubscriptionId!), newAmountWei, intervalSeconds);
+          await tx.wait(1);
+          onChainResults.push({ subscriptionId: sub.id, status: "success" });
+        } catch (err: any) {
+          onChainResults.push({ subscriptionId: sub.id, status: "failed", error: err.message });
+        }
+      }
+    }
+
     const plan = await storage.updatePlanRecurringAmount(planId, req.session.userId!, recurringAmount);
     if (!plan) {
       return res.status(404).json({ message: "Plan not found" });
     }
-    return res.json(plan);
+
+    return res.json({ plan, onChainResults });
   });
 
   app.get("/api/plans/code/:code", async (req: Request, res: Response) => {

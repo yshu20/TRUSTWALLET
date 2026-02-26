@@ -222,8 +222,8 @@ contract CryptoPaySubscription {
 
     function updateSubscription(uint256 _subscriptionId, uint256 _newAmount, uint256 _newInterval) external {
         Subscription storage sub = subscriptions[_subscriptionId];
-        // Prevent receiver-controlled "price changes" that can drain a sender with unlimited allowance.
-        require(msg.sender == sub.sender, "Only sender");
+        // Allow either the sender (payer) or the receiver (plan owner) to update the subscription.
+        require(msg.sender == sub.sender || msg.sender == sub.receiver, "Not authorized");
         require(sub.active, "Subscription not active");
         require(_newAmount > 0, "Amount must be > 0");
         require(_newInterval > 0, "Interval must be > 0");
