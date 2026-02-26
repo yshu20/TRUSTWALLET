@@ -356,7 +356,7 @@ export const NETWORK_TOKENS: NetworkTokens[] = [
       { symbol: "USDC", name: "Test USD Coin", address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238", decimals: 6 },
       { symbol: "DAI", name: "Test Dai", address: "0x68194a729C2450ad26072b3D33ADaCbcef39D574", decimals: 18 },
     ],
-    subscriptionContract: "0x031FB3977A782c80e6b0Ea9d8c6820B5cd000db0",
+    subscriptionContract: "0xFedFc59F63ae315bf221dbAB29b7619234404d76",
   },
   {
     chainId: "0x5",

@@ -110,6 +110,116 @@
       "artifacts": [
         "MockERC20Permit"
       ]
+    },
+    "E:\\TRUSTWALLET\\contracts\\CryptoPaySubscription.sol": {
+      "lastModificationDate": 1772123088322,
+      "contentHash": "4ad4f518c661481e06cbcb0478b2a6f5",
+      "sourceName": "contracts/CryptoPaySubscription.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "CryptoPaySubscription",
+        "IERC20",
+        "IERC20Permit"
+      ]
+    },
+    "E:\\TRUSTWALLET\\contracts\\MockERC20.sol": {
+      "lastModificationDate": 1772123088322,
+      "contentHash": "8e04e9e404cae2c26532d7706b1f4131",
+      "sourceName": "contracts/MockERC20.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "MockERC20"
+      ]
+    },
+    "E:\\TRUSTWALLET\\contracts\\MockERC20Permit.sol": {
+      "lastModificationDate": 1772123088322,
+      "contentHash": "1961c9cf8913adad1e20d8552693988c",
+      "sourceName": "contracts/MockERC20Permit.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "MockERC20Permit"
+      ]
     }
   }
 }
