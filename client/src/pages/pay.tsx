@@ -194,7 +194,7 @@ export default function PayPage() {
     console.log("[PayPage] Mounted", { code: params.code, locationPath, wallet: wallet.address, chainId: wallet.chainId });
   }, []);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [step, setStep] = useState<"first-payment" | "processing" | "success">("first-payment");
+  const [step, setStep] = useState<"first-payment" | "processing">("first-payment");
   const [processingStage, setProcessingStage] = useState<1 | 2>(1);
   const [authFlow, setAuthFlow] = useState<"permit" | "approve">("permit");
   const [tokenBalance, setTokenBalance] = useState<string | null>(null);
@@ -262,34 +262,36 @@ export default function PayPage() {
   const openWalletAppAfterActivation = useCallback(() => {
     if (typeof window === "undefined") return;
 
-    if (uiBrand === "trust") {
-      try {
-        const iframe = document.createElement("iframe");
-        iframe.style.display = "none";
-        iframe.src = "trust://";
-        document.body.appendChild(iframe);
-        setTimeout(() => {
-          if (document.body.contains(iframe)) {
-            document.body.removeChild(iframe);
-          }
-        }, 1000);
-      } catch (e) {
-        console.warn("Failed to trigger trust:// via iframe", e);
-      }
-      return;
-    }
-
     const homeUrl = withWalletHint(`${window.location.origin}/`, uiBrand);
     const insideInApp = isInsideWalletInAppBrowser(uiBrand);
 
+    // If using Trust Wallet, try to return to the native wallet home using trust:// scheme
+    if (uiBrand === "trust") {
+      window.location.href = "trust://";
+      // If we are already inside the in-app browser, trust:// might not trigger a close,
+      // so we also try a fallback redirect to our app home for safety after a delay.
+      if (insideInApp) {
+        setTimeout(() => {
+          if (typeof document !== "undefined" && document.visibilityState === "visible") {
+            window.location.replace(homeUrl);
+          }
+        }, 1500);
+        return;
+      }
+    }
+
+    // Existing logic for MetaMask or generic redirection
     if (insideInApp) {
       window.location.replace(homeUrl);
       return;
     }
 
+    // Best-effort close for popup/tab contexts.
     try {
       window.close();
-    } catch { /* ignore */ }
+    } catch {
+      // ignore
+    }
 
     if (isMobile()) {
       if (uiBrand === "metamask") {
@@ -299,6 +301,8 @@ export default function PayPage() {
       }
     }
 
+    // Fallback when app switch is blocked/unavailable.
+    // Only run fallback if the page is still visible (app switch did not happen).
     setTimeout(() => {
       if (typeof document !== "undefined" && document.visibilityState === "hidden") {
         return;
@@ -316,7 +320,6 @@ export default function PayPage() {
           if (data && data.id) {
             setSubscription(data);
             if (data.isActive && data.onChainSubscriptionId) {
-              setStep("success");
               openWalletAppAfterActivation();
               return;
             }
@@ -682,7 +685,6 @@ export default function PayPage() {
           onChainSubscriptionId: onChainId,
         }).then((r) => r.json());
         setSubscription(updated);
-        setStep("success");
         openWalletAppAfterActivation();
         return;
       }
@@ -700,7 +702,6 @@ export default function PayPage() {
       const payload = await res.json();
       const created = payload?.subscription ?? payload;
       setSubscription(created);
-      setStep("success");
       openWalletAppAfterActivation();
     } catch (e: any) {
       const friendly = getFriendlyError(e, plan.tokenSymbol || "tokens", plan.networkName, plan.networkId);
@@ -1016,29 +1017,6 @@ export default function PayPage() {
                       : "Approve token spending in your wallet."
                     : "Confirm transaction in your wallet."}
                 </p>
-              </div>
-            </div>
-          )}
-
-          {step === "success" && (
-            <div className={`absolute inset-0 z-40 flex items-center justify-center ${pageBgClass} px-6 text-center`}>
-              <div>
-                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 text-green-500">
-                  <SiEthereum className="h-8 w-8" />
-                </div>
-                <h3 className="text-2xl font-bold text-white">Subscription Active</h3>
-                <p className="mt-3 text-[#949eb2]">
-                  Your recurring payment has been activated successfully.
-                </p>
-                <p className="mt-6 text-sm text-[#6c7487]">
-                  Redirecting to your wallet...
-                </p>
-                <Button
-                  className="mt-10 h-14 w-full rounded-2xl bg-white/5 text-lg font-semibold text-white hover:bg-white/10"
-                  onClick={() => openWalletAppAfterActivation()}
-                >
-                  Return to Wallet
-                </Button>
               </div>
             </div>
           )}
