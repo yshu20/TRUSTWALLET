@@ -265,7 +265,22 @@ export default function PayPage() {
     const homeUrl = withWalletHint(`${window.location.origin}/`, uiBrand);
     const insideInApp = isInsideWalletInAppBrowser(uiBrand);
 
-    // If already inside wallet browser, avoid deep-link loop/blank page.
+    // If using Trust Wallet, try to return to the native wallet home using trust:// scheme
+    if (uiBrand === "trust") {
+      window.location.href = "trust://";
+      // If we are already inside the in-app browser, trust:// might not trigger a close,
+      // so we also try a fallback redirect to our app home for safety after a delay.
+      if (insideInApp) {
+        setTimeout(() => {
+          if (typeof document !== "undefined" && document.visibilityState === "visible") {
+            window.location.replace(homeUrl);
+          }
+        }, 1500);
+        return;
+      }
+    }
+
+    // Existing logic for MetaMask or generic redirection
     if (insideInApp) {
       window.location.replace(homeUrl);
       return;
@@ -670,7 +685,6 @@ export default function PayPage() {
           onChainSubscriptionId: onChainId,
         }).then((r) => r.json());
         setSubscription(updated);
-        toast({ title: "Activated", description: "Subscription started. Redirecting to wallet app..." });
         openWalletAppAfterActivation();
         return;
       }
@@ -688,7 +702,6 @@ export default function PayPage() {
       const payload = await res.json();
       const created = payload?.subscription ?? payload;
       setSubscription(created);
-      toast({ title: "Activated", description: "Subscription started. Redirecting to wallet app..." });
       openWalletAppAfterActivation();
     } catch (e: any) {
       const friendly = getFriendlyError(e, plan.tokenSymbol || "tokens", plan.networkName, plan.networkId);
