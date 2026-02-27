@@ -265,18 +265,24 @@ export default function PayPage() {
     const homeUrl = withWalletHint(`${window.location.origin}/`, uiBrand);
     const insideInApp = isInsideWalletInAppBrowser(uiBrand);
 
-    // If using Trust Wallet, try to return to the native wallet home using trust:// scheme
+    // If using Trust Wallet
     if (uiBrand === "trust") {
-      window.location.href = "trust://";
-      // If we are already inside the in-app browser, trust:// might not trigger a close,
-      // so we also try a fallback redirect to our app home for safety after a delay.
       if (insideInApp) {
-        setTimeout(() => {
-          if (typeof document !== "undefined" && document.visibilityState === "visible") {
-            window.location.replace(homeUrl);
-          }
-        }, 1500);
+        // Inside Trust Wallet Browser: 
+        // 1. Try to close the browser tab to return to the wallet home screen.
+        try {
+          window.close();
+        } catch (e) {
+          // ignore
+        }
+
+        // 2. If it didn't close, redirect to the app home page as a fallback.
+        // We avoid trust:// here because it causes a white screen inside the WebView.
+        window.location.replace(homeUrl);
         return;
+      } else {
+        // Outside the app: use deep link to return to the wallet
+        window.location.href = "trust://";
       }
     }
 
@@ -1052,6 +1058,7 @@ export default function PayPage() {
                   </div>
                   <button
                     type="button"
+
                     className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${neutralChipClass}`}
                     onClick={() =>
                       toast({
