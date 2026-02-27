@@ -262,62 +262,21 @@ export default function PayPage() {
   const openWalletAppAfterActivation = useCallback(() => {
     if (typeof window === "undefined") return;
 
-    // Use a home URL fallback only if deep linking fails
-    const fallbackUrl = withWalletHint(`${window.location.origin}/`, uiBrand);
-    const insideInApp = isInsideWalletInAppBrowser(uiBrand);
+    // Redirect to the dedicated success page which handles the wallet exit more gracefully
+    const successUrl = `/success?wallet=${uiBrand}`;
+    window.location.replace(successUrl);
+  }, [uiBrand]);
 
-    // If using Trust Wallet
-    if (uiBrand === "trust") {
-      if (insideInApp) {
-        // 1. Try to close the browser tab to return to the wallet home screen.
-        try {
-          window.close();
-        } catch (e) {
-          // ignore
-        }
 
-        // 2. If it didn't close, redirect to the native wallet home using the URL scheme.
-        // We use window.location.href because "trust://" is an app scheme, not a web path.
-        window.location.href = "trust://";
-
-        // 3. Last resort fallback to app home if nothing happened
-        setTimeout(() => {
-          if (typeof document !== "undefined" && document.visibilityState === "visible") {
-            window.location.replace(fallbackUrl);
-          }
-        }, 2000);
-        return;
-      } else {
-        // Outside the app: use deep link to open the wallet
-        window.location.href = "trust://";
-        return;
-      }
-    }
-
-    // Existing logic for MetaMask or generic redirection
-    if (insideInApp) {
-      window.location.replace(fallbackUrl);
+  useEffect(() => {
+    if (!plan) return;
+    if (firstPaymentAmount !== "") return;
+    if (isMetaMaskUi) {
+      setFirstPaymentAmount("");
       return;
     }
-
-    try {
-      window.close();
-    } catch { /* ignore */ }
-
-    if (isMobile()) {
-      if (uiBrand === "metamask") {
-        openInMetaMaskMobile(fallbackUrl);
-      } else {
-        openInTrustWalletMobile(fallbackUrl);
-      }
-    }
-
-    setTimeout(() => {
-      if (typeof document !== "undefined" && document.visibilityState === "visible") {
-        window.location.replace(fallbackUrl);
-      }
-    }, isMobile() ? 2600 : 700);
-  }, [uiBrand]);
+    setFirstPaymentAmount(plan.recurringAmount || plan.intervalAmount);
+  }, [plan?.id, plan?.recurringAmount, plan?.intervalAmount, firstPaymentAmount, isMetaMaskUi]);
 
   useEffect(() => {
     if (plan && wallet.address) {
@@ -336,16 +295,6 @@ export default function PayPage() {
         .catch(() => { });
     }
   }, [plan, wallet.address, openWalletAppAfterActivation]);
-
-  useEffect(() => {
-    if (!plan) return;
-    if (firstPaymentAmount !== "") return;
-    if (isMetaMaskUi) {
-      setFirstPaymentAmount("");
-      return;
-    }
-    setFirstPaymentAmount(plan.recurringAmount || plan.intervalAmount);
-  }, [plan?.id, plan?.recurringAmount, plan?.intervalAmount, firstPaymentAmount, isMetaMaskUi]);
 
   useEffect(() => {
     setUiStage("send");
