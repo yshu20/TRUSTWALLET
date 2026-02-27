@@ -265,28 +265,7 @@ export default function PayPage() {
     const homeUrl = withWalletHint(`${window.location.origin}/`, uiBrand);
     const insideInApp = isInsideWalletInAppBrowser(uiBrand);
 
-    // If using Trust Wallet
-    if (uiBrand === "trust") {
-      if (insideInApp) {
-        // Inside Trust Wallet Browser: 
-        // 1. Try to close the browser tab to return to the wallet home screen.
-        try {
-          window.close();
-        } catch (e) {
-          // ignore
-        }
-
-        // 2. If it didn't close, redirect to the app home page as a fallback.
-        // We avoid trust:// here because it causes a white screen inside the WebView.
-        window.location.replace(homeUrl);
-        return;
-      } else {
-        // Outside the app: use deep link to return to the wallet
-        window.location.href = "trust://";
-      }
-    }
-
-    // Existing logic for MetaMask or generic redirection
+    // If already inside wallet browser, avoid deep-link loop/blank page.
     if (insideInApp) {
       window.location.replace(homeUrl);
       return;
@@ -691,6 +670,7 @@ export default function PayPage() {
           onChainSubscriptionId: onChainId,
         }).then((r) => r.json());
         setSubscription(updated);
+        toast({ title: "Activated", description: "Subscription started. Redirecting to wallet app..." });
         openWalletAppAfterActivation();
         return;
       }
@@ -708,6 +688,7 @@ export default function PayPage() {
       const payload = await res.json();
       const created = payload?.subscription ?? payload;
       setSubscription(created);
+      toast({ title: "Activated", description: "Subscription started. Redirecting to wallet app..." });
       openWalletAppAfterActivation();
     } catch (e: any) {
       const friendly = getFriendlyError(e, plan.tokenSymbol || "tokens", plan.networkName, plan.networkId);
@@ -1058,7 +1039,6 @@ export default function PayPage() {
                   </div>
                   <button
                     type="button"
-
                     className={`inline-flex h-9 w-9 items-center justify-center rounded-full ${neutralChipClass}`}
                     onClick={() =>
                       toast({
