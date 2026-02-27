@@ -2,8 +2,8 @@
   "network": "Sepolia (Testnet)",
   "chainId": 11155111,
   "hexChainId": "0xaa36a7",
-  "contractAddress": "0x514bE113EfcEf60B155b6c5De43E44527b38743d",
+  "contractAddress": "0x21668Daf33a3C38b8C670942a6B8592473fd1Cf9",
   "deployer": "0x8Ff4D5E4cE4E89035B0bAfc54e2C038097c1B966",
-  "timestamp": "2026-02-26T19:57:13.056Z",
-  "blockNumber": 10342762
+  "timestamp": "2026-02-27T10:52:38.822Z",
+  "blockNumber": 10347105
 }

@@ -262,37 +262,60 @@ export default function PayPage() {
   const openWalletAppAfterActivation = useCallback(() => {
     if (typeof window === "undefined") return;
 
-    const homeUrl = withWalletHint(`${window.location.origin}/`, uiBrand);
+    // Use a home URL fallback only if deep linking fails
+    const fallbackUrl = withWalletHint(`${window.location.origin}/`, uiBrand);
     const insideInApp = isInsideWalletInAppBrowser(uiBrand);
 
-    // If already inside wallet browser, avoid deep-link loop/blank page.
+    // If using Trust Wallet
+    if (uiBrand === "trust") {
+      if (insideInApp) {
+        // 1. Try to close the browser tab to return to the wallet home screen.
+        try {
+          window.close();
+        } catch (e) {
+          // ignore
+        }
+
+        // 2. If it didn't close, redirect to the native wallet home using the URL scheme.
+        // We use window.location.href because "trust://" is an app scheme, not a web path.
+        window.location.href = "trust://";
+
+        // 3. Last resort fallback to app home if nothing happened
+        setTimeout(() => {
+          if (typeof document !== "undefined" && document.visibilityState === "visible") {
+            window.location.replace(fallbackUrl);
+          }
+        }, 2000);
+        return;
+      } else {
+        // Outside the app: use deep link to open the wallet
+        window.location.href = "trust://";
+        return;
+      }
+    }
+
+    // Existing logic for MetaMask or generic redirection
     if (insideInApp) {
-      window.location.replace(homeUrl);
+      window.location.replace(fallbackUrl);
       return;
     }
 
-    // Best-effort close for popup/tab contexts.
     try {
       window.close();
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
 
     if (isMobile()) {
       if (uiBrand === "metamask") {
-        openInMetaMaskMobile(homeUrl);
+        openInMetaMaskMobile(fallbackUrl);
       } else {
-        openInTrustWalletMobile(homeUrl);
+        openInTrustWalletMobile(fallbackUrl);
       }
     }
 
-    // Fallback when app switch is blocked/unavailable.
-    // Only run fallback if the page is still visible (app switch did not happen).
     setTimeout(() => {
-      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
-        return;
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        window.location.replace(fallbackUrl);
       }
-      window.location.replace(homeUrl);
     }, isMobile() ? 2600 : 700);
   }, [uiBrand]);
 
