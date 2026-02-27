@@ -66,12 +66,9 @@ function getFriendlyError(error: any, tokenSymbol: string, networkName: string, 
 
   if (lower.includes("missing revert data") || msg.includes("CALL_EXCEPTION")) {
     if (isTestnet(chainId)) {
-      if (tokenSymbol === "ETH") {
-        return `Your wallet doesn't have enough ETH for this transaction on ${networkName}.`;
-      }
-      return `Contract call failed for ${tokenSymbol} on ${networkName}. This often means you don't have enough ETH (gas) to pay for the transaction, or the token address is incorrect. Make sure you have both ${tokenSymbol} and a little bit of Sepolia ETH.`;
+      return `Your wallet doesn't have any ${tokenSymbol} test tokens on ${networkName}. You need to get test tokens from a faucet before you can make a payment.`;
     }
-    return `Transaction failed - likely insufficient ${tokenSymbol} balance or not enough ETH for gas. Make sure you have enough tokens and native coins in your wallet on ${networkName}.`;
+    return `Transaction failed - likely insufficient ${tokenSymbol} balance. Make sure you have enough ${tokenSymbol} tokens in your wallet on ${networkName}.`;
   }
   if (
     lower.includes("insufficient funds") ||
@@ -534,29 +531,13 @@ export default function PayPage() {
       const recurringAmount = plan.recurringAmount || plan.intervalAmount;
       const recurringWei = parseUnits(recurringAmount, decimals);
 
-      console.log("[PayPage] Payment Parameters:", {
-        amount,
-        decimals,
-        initialWei: initialWei.toString(),
-        recurringAmount,
-        recurringWei: recurringWei.toString(),
-        tokenAddress: plan.tokenAddress,
-        contractAddr
-      });
-
       if (!isResumeActivation) {
         let tokenBalanceWei;
         try {
           tokenBalanceWei = await tokenContract.balanceOf(payer);
-          console.log("[PayPage] Payer balance:", {
-            address: payer,
-            balanceWei: tokenBalanceWei.toString(),
-            formatted: formatUnits(tokenBalanceWei, decimals)
-          });
         } catch (balErr: any) {
-          console.error("[PayPage] Balance check failed:", balErr);
           const friendly = getFriendlyError(balErr, plan.tokenSymbol || "tokens", plan.networkName, plan.networkId);
-          toast({ title: "Balance check failed", description: friendly, variant: "destructive" });
+          toast({ title: "Payment failed", description: friendly, variant: "destructive" });
           setStep("first-payment");
           setIsProcessing(false);
           return;
