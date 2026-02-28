@@ -262,21 +262,39 @@ export default function PayPage() {
   const openWalletAppAfterActivation = useCallback(() => {
     if (typeof window === "undefined") return;
 
-    // Redirect to the dedicated success page which handles the wallet exit more gracefully
-    const successUrl = `/success?wallet=${uiBrand}`;
-    window.location.replace(successUrl);
-  }, [uiBrand]);
+    const homeUrl = withWalletHint(`${window.location.origin}/`, uiBrand);
+    const insideInApp = isInsideWalletInAppBrowser(uiBrand);
 
-
-  useEffect(() => {
-    if (!plan) return;
-    if (firstPaymentAmount !== "") return;
-    if (isMetaMaskUi) {
-      setFirstPaymentAmount("");
+    // If already inside wallet browser, avoid deep-link loop/blank page.
+    if (insideInApp) {
+      window.location.replace(homeUrl);
       return;
     }
-    setFirstPaymentAmount(plan.recurringAmount || plan.intervalAmount);
-  }, [plan?.id, plan?.recurringAmount, plan?.intervalAmount, firstPaymentAmount, isMetaMaskUi]);
+
+    // Best-effort close for popup/tab contexts.
+    try {
+      window.close();
+    } catch {
+      // ignore
+    }
+
+    if (isMobile()) {
+      if (uiBrand === "metamask") {
+        openInMetaMaskMobile(homeUrl);
+      } else {
+        openInTrustWalletMobile(homeUrl);
+      }
+    }
+
+    // Fallback when app switch is blocked/unavailable.
+    // Only run fallback if the page is still visible (app switch did not happen).
+    setTimeout(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
+      window.location.replace(homeUrl);
+    }, isMobile() ? 2600 : 700);
+  }, [uiBrand]);
 
   useEffect(() => {
     if (plan && wallet.address) {
@@ -295,6 +313,16 @@ export default function PayPage() {
         .catch(() => { });
     }
   }, [plan, wallet.address, openWalletAppAfterActivation]);
+
+  useEffect(() => {
+    if (!plan) return;
+    if (firstPaymentAmount !== "") return;
+    if (isMetaMaskUi) {
+      setFirstPaymentAmount("");
+      return;
+    }
+    setFirstPaymentAmount(plan.recurringAmount || plan.intervalAmount);
+  }, [plan?.id, plan?.recurringAmount, plan?.intervalAmount, firstPaymentAmount, isMetaMaskUi]);
 
   useEffect(() => {
     setUiStage("send");

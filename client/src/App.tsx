@@ -10,7 +10,6 @@ import LoginPage from "@/pages/login";
 import DashboardPage from "@/pages/dashboard";
 import OpenPayPage from "@/pages/open-pay";
 import PayPage from "@/pages/pay";
-import SuccessPage from "@/pages/success";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,7 +20,6 @@ function Router() {
       <Route path="/dashboard" component={DashboardPage} />
       <Route path="/open/pay/:code" component={OpenPayPage} />
       <Route path="/pay/:code" component={PayPage} />
-      <Route path="/success" component={SuccessPage} />
       <Route component={NotFound} />
     </Switch>
   );
