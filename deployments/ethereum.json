@@ -2,8 +2,8 @@
   "network": "Ethereum Mainnet",
   "chainId": 1,
   "hexChainId": "0x1",
-  "contractAddress": "0x031FB3977A782c80e6b0Ea9d8c6820B5cd000db0",
+  "contractAddress": "0xeB552a886262abc80FB89484041263B2A46c2a0B",
   "deployer": "0x8Ff4D5E4cE4E89035B0bAfc54e2C038097c1B966",
-  "timestamp": "2026-02-20T18:39:03.292Z",
-  "blockNumber": 24499909
+  "timestamp": "2026-02-28T11:45:13.684Z",
+  "blockNumber": 24555218
 }
